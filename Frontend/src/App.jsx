@@ -1,11 +1,11 @@
 import "./App.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   return (
     <>
-      <h2 className="bg-gray-500 text-red-400 w-full h-screen text-center text-[50px]">
-        hello
-      </h2>
+      <ToastContainer />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, useNavigate, NavLink } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 export default function NavBar() {
@@ -7,14 +7,20 @@ export default function NavBar() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+  const navigate = useNavigate();
 
-  // Check login status on component mount
+  // Check login status and fetch user name on component mount
   useEffect(() => {
     const token = localStorage.getItem("accessToken"); // Check for accessToken
+    const name = localStorage.getItem("username"); // Fetch userName from localStorage
+
     if (token) {
       setIsLoggedIn(true); // If token exists, user is logged in
+      setUserName(name || ""); // Set userName if available
     } else {
       setIsLoggedIn(false); // If token does not exist, user is logged out
+      setUserName(""); // Clear userName
     }
 
     window.addEventListener("scroll", handleScroll);
@@ -45,7 +51,20 @@ export default function NavBar() {
     localStorage.removeItem("accessToken"); // Remove token from localStorage
     setIsLoggedIn(false); // Update state to logged out
     alert("You have been logged out."); // Show alert message
+    navigate("/"); // Use the navigate function from useNavigate hook
   };
+
+  // const handleLogout = () => {
+  //   dispatch(logout())
+  //     .unwrap()
+  //     .then(() => {
+  //       alert("You have been logged out.");
+  //       navigate("/login"); // Redirect to login page after logout
+  //     })
+  //     .catch((error) => {
+  //       alert(error);
+  //     });
+  // };
 
   return (
     <header
@@ -79,24 +98,23 @@ export default function NavBar() {
             id="mobile-menu-2"
           >
             <ul className="flex flex-col lg:flex-row lg:space-x-8 mt-4 lg:mt-0 font-medium">
-              {["/", "/Hire a Driver", "/Blog", "/about", "/Contract Us"].map(
-                (path, index) => (
-                  <li key={index} className="group relative">
-                    <NavLink
-                      to={path}
-                      onClick={closeMenu}
-                      className="block py-2 pr-4 pl-3 duration-200 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:p-0"
-                    >
-                      {path === "/"
-                        ? "Home"
-                        : path.replace("/", "").replace(/([A-Z])/g, " $1")}
-                    </NavLink>
-                    <span className="absolute left-0 bottom-0 top-7 md:top-7 w-0 h-[2px] bg-[#1ecb15] transition-all duration-300 group-hover:w-full"></span>
-                  </li>
-                )
-              )}
+              {["/", "/Blog", "/about", "/Contract Us"].map((path, index) => (
+                <li key={index} className="group relative">
+                  <NavLink
+                    to={path}
+                    onClick={closeMenu}
+                    className="block py-2 pr-4 pl-3 duration-200 border-b border-gray-100 hover:bg-gray-50 lg:hover:bg-transparent lg:border-0 lg:p-0"
+                  >
+                    {path === "/"
+                      ? "Home"
+                      : path.replace("/", "").replace(/([A-Z])/g, " $1")}
+                  </NavLink>
+                  <span className="absolute left-0 bottom-0 top-7 md:top-7 w-0 h-[2px] bg-[#1ecb15] transition-all duration-300 group-hover:w-full"></span>
+                </li>
+              ))}
 
               {/* Conditionally render login/logout button */}
+
               <li className="group relative">
                 {isLoggedIn ? (
                   <button
@@ -115,6 +133,17 @@ export default function NavBar() {
                   </NavLink>
                 )}
               </li>
+              <Link to={"/profile"}>
+                <li>
+                  {isLoggedIn && userName && (
+                    <li className="group relative">
+                      <span className=" py-2 pr-4 pl-3 font-semibold text-gray-700 border rounded-full flex justify-center items-center cursor-pointer">
+                        {userName.charAt(0).toUpperCase()}
+                      </span>
+                    </li>
+                  )}
+                </li>
+              </Link>
             </ul>
           </div>
         </div>
