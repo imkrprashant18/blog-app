@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { MenuIcon, Grid, Settings, User, Upload, Receipt } from "lucide-react";
+import {
+  MenuIcon,
+  Grid,
+  Settings,
+  User,
+  Upload,
+  Receipt,
+  Eye,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { getCurrentUser } from "@/store/authSlice";
 import UserProfile from "./UserDataDisplay";
 import UpdateDetails from "./UpdateDetails";
 import BlogUploadForm from "./BlogUploadForm";
+import BlogList from "./BlogShow";
 
 const UserData = () => {
   const [activeView, setActiveView] = useState("dashboard");
@@ -48,9 +57,9 @@ const UserData = () => {
     },
 
     {
-      id: "settings",
-      label: "Settings",
-      icon: <Settings className="h-5 w-5 text-white" />,
+      id: "blogshow",
+      label: "Show All Blogs",
+      icon: <Eye className="h-5 w-5 text-white" />,
     },
   ];
 
@@ -62,6 +71,8 @@ const UserData = () => {
         return <UpdateDetails />;
       case "uploadBlog":
         return <BlogUploadForm />;
+      case "blogshow":
+        return <BlogList />;
 
       default:
         return (
@@ -74,7 +85,7 @@ const UserData = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-100 pt-28">
+    <div className="min-h-screen flex bg-gray-100 pt-[75px]">
       {/* Sidebar - Desktop */}
       <aside className="hidden md:flex flex-col w-64  border-r bg-gray-800">
         {/* Admin Profile Section */}

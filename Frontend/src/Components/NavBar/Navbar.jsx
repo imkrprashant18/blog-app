@@ -52,6 +52,7 @@ export default function NavBar() {
     setIsLoggedIn(false); // Update state to logged out
     alert("You have been logged out."); // Show alert message
     navigate("/"); // Use the navigate function from useNavigate hook
+    window.location.reload();
   };
 
   // const handleLogout = () => {
