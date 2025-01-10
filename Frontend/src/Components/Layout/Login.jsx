@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser, registerUser } from "@/store/authSlice";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,11 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Lock, User, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Import the navigate hook
-
+import { getCurrentUser } from "@/store/authSlice";
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Initialize the navigate hook
   const { status, error } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth.user);
+
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
+  if (user) {
+    navigate("/");
+  }
 
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
