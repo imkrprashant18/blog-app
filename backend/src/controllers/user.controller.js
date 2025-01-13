@@ -17,6 +17,7 @@ const generateAccessandRefereshToken = async (userId) => {
 const userRegister = async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
+
     if ([fullName, email, password].some((field) => field?.trim() === "")) {
       return res.status(400).json({ message: "All fields are required" });
     }
