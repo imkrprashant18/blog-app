@@ -7,8 +7,9 @@ import { useUserAuthStore } from "../../store/user-auth-store";
 
 export default function Sidebar() {
   const { user } = useUserAuthStore();
+  const fullName = user?.user?.fullName.toLowerCase();
   const id = user?.user?._id;
-
+  const concatedId = id?.concat(fullName);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { pathname } = useLocation();
 
@@ -17,7 +18,7 @@ export default function Sidebar() {
     { icon: Search, label: "Search", href: "/search" },
     { icon: PenSquare, label: "Create", href: "/create" },
     { icon: Heart, label: "Notifications", href: "/notifications" },
-    { icon: User, label: "Profile", href: `/profile/${id}` },
+    { icon: User, label: "Profile", href: `/profile/${concatedId}` },
   ];
   return (
     <motion.nav
@@ -35,7 +36,7 @@ export default function Sidebar() {
                 to="/"
                 className="text-2xl font-bold text-[#16404D] dark:text-[#DDA853]"
               >
-                BlogApp
+                Box Verse
               </Link>
             )}
             <button

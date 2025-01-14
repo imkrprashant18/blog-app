@@ -5,40 +5,30 @@ import { UploadOnCloudinary } from "../utils/cloudinary.js";
 const createBlog = async (req, res) => {
   try {
     const { title, content, category } = req.body;
-    const userId = req.user._id;
-
-    const featureImageLocalPath = req.files?.featureImage[0]?.path;
-    if (!featureImageLocalPath) {
-      return res
-        .status(400)
-        .json({ message: "Feature Image file is required" });
+    if (!title || !content || !category) {
+      return res.status(400).json({ message: "All fields are required" });
     }
-    const featureImage = await UploadOnCloudinary(featureImageLocalPath);
-    if (!featureImage) {
-      return res
-        .status(400)
-        .json({ message: "Feature Image file is required" });
-    }
-
-    const newBlog = await Blog.create({
+    const author = req.user._id;
+    const blog = await Blog.create({
       title,
       content,
       category,
-      featureImage: featureImage.url,
-      author: userId,
+      author,
     });
-    if (!newBlog) {
+    if (!blog) {
       return res.status(500).json({ message: "Failed to create blog" });
     }
-    await newBlog.save();
-    await User.findByIdAndUpdate(userId, {
-      $push: { posts: newBlog._id },
+    const user = await User.findById(author);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    await user.findByIdAndUpdate(author, {
+      $push: { posts: blog._id },
     });
-    res
-      .status(201)
-      .json({ message: "Blog created successfully", blog: newBlog });
+    await user.save();
+    return res.status(201).json({ message: "Blog created successfully", blog });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to create blog" });
+    console.log(error);
   }
 };
 

@@ -5,5 +5,17 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        ".scrollbar-none": {
+          "-ms-overflow-style": "none" /* IE and Edge */,
+          "scrollbar-width": "none" /* Firefox */,
+        },
+        ".scrollbar-none::-webkit-scrollbar": {
+          display: "none" /* Chrome, Safari, and Edge */,
+        },
+      });
+    },
+  ],
 };

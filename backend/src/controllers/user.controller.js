@@ -138,8 +138,12 @@ const getCurrentUser = async (req, res) => {
 
 const updateAccountDetials = async (req, res) => {
   try {
-    const { fullName, email } = req.body;
-    if (!fullName && !email) {
+    const { fullName, email, bio, address, linkedin } = req.body;
+    if (
+      [fullName, email, bio, address, linkedin].some(
+        (field) => field.trim() === ""
+      )
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
     const user = await User.findByIdAndUpdate(
@@ -147,23 +151,86 @@ const updateAccountDetials = async (req, res) => {
       {
         $set: {
           fullName,
-          email: email,
+          email,
+          bio,
+          address,
+          linkedin,
         },
       },
       { new: true }
-    ).select("-password");
-    return res.status(200).json({
-      message: "Account details updated successfully",
-      user,
-    });
+    ).select("-password --refreshToken");
+    return res
+      .status(200)
+      .json({ message: "Account details updated successfully", user });
   } catch (error) {
     return res.status(501).json({ message: "User are Unauthorized" });
   }
 };
+
+const updateAvatar = async (req, res) => {
+  try {
+    const avatarLocalPath = req.file?.path;
+    if (!avatarLocalPath) {
+      return res.status(400).json({ message: "Avatar file is missing" });
+    }
+    const avatar = await UploadOnCloudinary(avatarLocalPath);
+    if (!avatar.url) {
+      return res
+        .status(400)
+        .json({ message: "Error while uploading on avatar" });
+    }
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          avatar: avatar.url,
+        },
+      },
+      { new: true }
+    ).select("-password --accessToken");
+    return res
+      .status(200)
+      .json({ message: "Avatar updated successfully", user });
+  } catch (error) {
+    return res.status(501).json({ message: "User are Unauthorized" });
+  }
+};
+
+const updateCoverImage = async (req, res) => {
+  try {
+    const coverImageLocalPath = req.file?.path;
+    if (!coverImageLocalPath) {
+      return res.status(400).json({ message: "Cover image file is missing" });
+    }
+    const coverImage = await UploadOnCloudinary(coverImageLocalPath);
+    if (!coverImage.url) {
+      return res
+        .status(400)
+        .json({ message: "Error while uploading on avatar" });
+    }
+    const user = await User.findByIdAndUpdate(
+      req.user?._id,
+      {
+        $set: {
+          coverImage: coverImage.url,
+        },
+      },
+      { new: true }
+    ).select("-password --accessToken");
+    return res
+      .status(200)
+      .json({ message: "Cover image updated successfully", user });
+  } catch (error) {
+    return res.status(501).json({ message: "User are Unauthorized" });
+  }
+};
+
 export {
   userRegister,
   loginUser,
   logoutUser,
   getCurrentUser,
   updateAccountDetials,
+  updateAvatar,
+  updateCoverImage,
 };

@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { generateUsername } from "../utils/generatorFunction.js";
 
 dotenv.config({
   path: "./.env",
@@ -21,9 +22,33 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
+    username: {
+      type: String,
+      default: null,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+    },
     avatar: {
-      type: String, //cloudinary url
+      type: String,
       required: true,
+    },
+    coverImage: {
+      type: String,
+      default: null,
+    },
+    bio: {
+      type: String,
+      default: null,
+    },
+    address: {
+      type: String,
+      default: null,
+    },
+    linkedin: {
+      type: String,
+      default: null,
     },
     password: {
       type: String,
@@ -41,13 +66,13 @@ const userSchema = new Schema(
     likedPosts: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Blog", // Posts liked by the user
+        ref: "Blog",
       },
     ],
     comments: [
       {
         type: Schema.Types.ObjectId,
-        ref: "Comment", // Reference to the Comment schema
+        ref: "Comment",
       },
     ],
     createdAt: {
@@ -62,6 +87,12 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("fullName") || !this.username) {
+    return next();
+  }
+  this.username = generateUsername(this.fullName);
+});
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next(); //used to check the password either modified or not
   this.password = await bcrypt.hash(this.password, 10);
