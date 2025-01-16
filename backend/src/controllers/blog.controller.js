@@ -185,6 +185,7 @@ const updateFeatureImage = asyncHandler(async (req, res) => {
     throw new ApiError(404, "User not found");
   }
   const blog = await Blog.findById(id);
+
   if (!blog) {
     throw new ApiError(404, "Blog not found");
   }
@@ -194,16 +195,18 @@ const updateFeatureImage = asyncHandler(async (req, res) => {
       "You are not authorized to update this feature image"
     );
   }
-  const featureImageLocalPath = req.file?.path;
-  console.log(featureImageLocalPath);
+
+  const featureImageLocalPath = req.files?.featureImage[0]?.path;
   if (!featureImageLocalPath) {
     throw new ApiError(400, "Feature image is required");
   }
+
   const featureImage = await UploadOnCloudinary(featureImageLocalPath);
   if (!featureImage) {
     throw new ApiError(400, "Feature image is required");
   }
-  const updateFeatureImage = await Blog.findByIdAndUpdate(
+
+  const updateBlog = await Blog.findByIdAndUpdate(
     id,
     {
       $set: {
@@ -212,10 +215,50 @@ const updateFeatureImage = asyncHandler(async (req, res) => {
     },
     { new: true }
   );
+  if (!updateBlog) {
+    throw new ApiError(400, "Feature image not updated");
+  }
   return res
     .status(200)
     .json(
-      new ApiResponse(200, updateFeatureImage, "Blog updated successfully")
+      new ApiResponse(200, updateBlog, "Feature image updated successfully")
     );
 });
-export { createBlog, getAllBlogs, getBlogById, updateBlog, updateFeatureImage };
+
+// delete blog
+
+const deleteBlog = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  const blog = await Blog.findById(id);
+
+  if (!blog) {
+    throw new ApiError(404, "Blog not found");
+  }
+  if (blog.author.toString() !== user._id.toString()) {
+    throw new ApiError(403, "You are not authorized to delete this blog");
+  }
+  const deleteBlog = await Blog.findByIdAndDelete(id);
+  if (!deleteBlog) {
+    throw new ApiError(400, "Blog not deleted");
+  }
+  await User.findByIdAndUpdate(
+    req.user._id,
+    { $pull: { blogs: id } },
+    { new: true }
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Blog deleted successfully"));
+});
+export {
+  createBlog,
+  getAllBlogs,
+  getBlogById,
+  updateBlog,
+  updateFeatureImage,
+  deleteBlog,
+};

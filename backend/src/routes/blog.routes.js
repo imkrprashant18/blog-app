@@ -6,6 +6,7 @@ import {
   getBlogById,
   updateBlog,
   updateFeatureImage,
+  deleteBlog,
 } from "../controllers/blog.controller.js";
 import { verifyJWT } from "../middelware/authMiddelware.js";
 import { upload } from "../middelware/multer.js";
@@ -34,5 +35,7 @@ router.route("/update-feature-image/:id").patch(
   ]),
   updateFeatureImage
 );
+
+router.route("/delete-blog/:id").delete(verifyJWT, deleteBlog);
 
 export default router;
