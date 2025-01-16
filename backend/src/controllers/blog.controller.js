@@ -4,7 +4,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { UploadOnCloudinary } from "../utils/cloudinary.js";
-import mongoose from "mongoose";
 // create blog
 const createBlog = asyncHandler(async (req, res) => {
   const { title, content, category } = req.body;
@@ -79,6 +78,7 @@ const getAllBlogs = asyncHandler(async (req, res) => {
         category: 1,
         featureImage: 1,
         "authorDetails.fullName": 1,
+        "authorDetails.avatar": 1,
       },
     },
     {
@@ -96,20 +96,19 @@ const getAllBlogs = asyncHandler(async (req, res) => {
 });
 
 // get blogs by id
-
 const getBlogById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  console.log(id);
   const user = await User.findById(req.user._id);
-
   if (!user) {
     throw new ApiError(404, "User is not authorized to access this blog");
   }
   const blogId = await Blog.findById(id);
-
+  if (!blogId) {
+    throw new ApiError(404, "Blog not found");
+  }
   const blog = await Blog.aggregate([
     {
-      $match: { _id: blogId },
+      $match: { _id: blogId._id },
     },
     {
       $lookup: {
@@ -131,11 +130,12 @@ const getBlogById = asyncHandler(async (req, res) => {
         category: 1,
         featureImage: 1,
         "authorDetails.fullName": 1,
+        "authorDetails.avatar": 1,
       },
     },
   ]);
 
-  if (!blog) {
+  if (!blog && blog.length === 0) {
     throw new ApiError(404, "Blog not found");
   }
   console.log(blog);
@@ -144,4 +144,78 @@ const getBlogById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, blog[0], "Blog fetched successfully"));
 });
 
-export { createBlog, getAllBlogs, getBlogById };
+// update blog
+const updateBlog = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { title, content, category } = req.body;
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  const blog = await Blog.findById(id);
+
+  if (!blog) {
+    throw new ApiError(404, "Blog not found");
+  }
+  if (blog.author.toString() !== user._id.toString()) {
+    throw new ApiError(403, "You are not authorized to update this blog");
+  }
+
+  const updateBlog = await Blog.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        title,
+        content,
+        category,
+      },
+    },
+    { new: true }
+  );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updateBlog, "Blog updated successfully"));
+});
+
+// update feature -image
+const updateFeatureImage = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+  const blog = await Blog.findById(id);
+  if (!blog) {
+    throw new ApiError(404, "Blog not found");
+  }
+  if (blog.author.toString() !== user._id.toString()) {
+    throw new ApiError(
+      403,
+      "You are not authorized to update this feature image"
+    );
+  }
+  const featureImageLocalPath = req.file?.path;
+  console.log(featureImageLocalPath);
+  if (!featureImageLocalPath) {
+    throw new ApiError(400, "Feature image is required");
+  }
+  const featureImage = await UploadOnCloudinary(featureImageLocalPath);
+  if (!featureImage) {
+    throw new ApiError(400, "Feature image is required");
+  }
+  const updateFeatureImage = await Blog.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        featureImage: featureImage.url,
+      },
+    },
+    { new: true }
+  );
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, updateFeatureImage, "Blog updated successfully")
+    );
+});
+export { createBlog, getAllBlogs, getBlogById, updateBlog, updateFeatureImage };
