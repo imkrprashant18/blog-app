@@ -143,6 +143,15 @@ const getBlogById = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, blog[0], "Blog fetched successfully"));
 });
+const publicBlogs = asyncHandler(async (req, res) => {
+  const blog = await Blog.find();
+  if (!blog) {
+    throw new ApiError(404, "Blog not found");
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(200, blog, "Blog fetched successfully"));
+});
 
 // update blog
 const updateBlog = asyncHandler(async (req, res) => {
@@ -261,4 +270,5 @@ export {
   updateBlog,
   updateFeatureImage,
   deleteBlog,
+  publicBlogs,
 };
