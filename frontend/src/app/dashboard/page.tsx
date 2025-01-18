@@ -2,14 +2,15 @@
 
 import ProtectedRoute from "@/components/user-auth/protected-route";
 import React from "react";
-import { useUserAuthStore } from "@/store/user-auth-store";
 
+import Layout from "@/components/layout/layout";
+import AllBlogs from "@/components/blogs/all-blogs";
 const DashBoardPage: React.FC = () => {
-  const { currentUser } = useUserAuthStore();
-  console.log("Current User:", currentUser);
   return (
     <ProtectedRoute>
-      <h1>Dashboard</h1>
+      <Layout>
+        <AllBlogs />
+      </Layout>
     </ProtectedRoute>
   );
 };
