@@ -33,6 +33,8 @@ const AllBlogs: React.FC<BlogStore> = () => {
 
   const blogs = allBlogs?.data || [];
 
+  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, "");
+
   return (
     <div className="w-full flex py-12 justify-center overflow-hidden">
       <div className="w-full flex justify-center items-center gap-12 flex-col overflow-hidden">
@@ -44,7 +46,7 @@ const AllBlogs: React.FC<BlogStore> = () => {
           >
             <BlogCard
               title={blog?.title}
-              content={blog?.content}
+              content={stripHtml(blog?.content)}
               authorName={blog?.authorDetails.fullName}
               authorAvatar={blog?.authorDetails.avatar}
               featureImage={blog?.featureImage}
